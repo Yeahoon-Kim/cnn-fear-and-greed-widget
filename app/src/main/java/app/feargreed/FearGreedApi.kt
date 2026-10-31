@@ -18,32 +18,34 @@ data class Snapshot(
 
 sealed interface FetchResult {
     data class Success(val snapshot: Snapshot) : FetchResult
-    data object AuthFailed : FetchResult
-    data object QuotaExceeded : FetchResult
+    data object Blocked : FetchResult
     data object Failed : FetchResult
 }
 
 object FearGreedApi {
+    private const val TAG = "FearGreedApi"
     private const val TIMEOUT_MS = 15_000
+    private const val USER_AGENT = "FearGreedWidget/0.1 (personal project)"
 
-    fun fetch(apiKey: String): FetchResult {
-        val connection = URL("${BuildConfig.API_BASE}/v1/index").openConnection() as HttpURLConnection
+    fun fetch(): FetchResult {
+        val connection = URL(BuildConfig.API_URL).openConnection() as HttpURLConnection
         return try {
             connection.connectTimeout = TIMEOUT_MS
             connection.readTimeout = TIMEOUT_MS
-            connection.setRequestProperty("x-oanor-key", apiKey)
+            connection.setRequestProperty("User-Agent", USER_AGENT)
             connection.setRequestProperty("Accept", "application/json")
-            when (connection.responseCode) {
+            val status = connection.responseCode
+            Log.i(TAG, "response status=$status")
+            when (status) {
                 200 -> {
                     val body = connection.inputStream.bufferedReader().use { it.readText() }
                     parse(body, Instant.now())?.let { FetchResult.Success(it) } ?: FetchResult.Failed
                 }
-                401, 402 -> FetchResult.AuthFailed
-                429 -> FetchResult.QuotaExceeded
+                403, 418, 429 -> FetchResult.Blocked
                 else -> FetchResult.Failed
             }
         } catch (e: IOException) {
-            Log.w("FearGreedApi", "fetch failed", e)
+            Log.w(TAG, "fetch failed", e)
             FetchResult.Failed
         } finally {
             connection.disconnect()
@@ -52,7 +54,7 @@ object FearGreedApi {
 
     fun parse(body: String, fetchedAt: Instant): Snapshot? {
         val data = try {
-            JSONObject(body).getJSONObject("data")
+            JSONObject(body).getJSONObject("fear_and_greed")
         } catch (_: org.json.JSONException) {
             return null
         }
@@ -63,7 +65,7 @@ object FearGreedApi {
             score = score,
             rating = data.optString("rating"),
             previousClose = previousClose,
-            updated = parseInstant(data.optString("updated")) ?: fetchedAt,
+            updated = parseInstant(data.optString("timestamp")) ?: fetchedAt,
         )
     }
 

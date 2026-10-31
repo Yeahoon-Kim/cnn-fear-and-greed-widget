@@ -24,18 +24,17 @@ class RefreshWorker(context: Context, params: WorkerParameters) : Worker(context
         val blocked = store.blockedUntil?.isAfter(now) == true
         val due = RefreshPolicy.isDue(now, store.lastAttempt)
 
-        if (store.apiKey.isNotBlank() && (force || (due && !blocked))) {
+        if (force || (due && !blocked)) {
             store.lastAttempt = now
-            when (val result = FearGreedApi.fetch(store.apiKey)) {
+            when (val result = FearGreedApi.fetch()) {
                 is FetchResult.Success -> {
                     store.snapshot = result.snapshot
                     store.status = WidgetStatus.OK
                     store.blockedUntil = null
                 }
-                FetchResult.AuthFailed -> store.status = WidgetStatus.AUTH
-                FetchResult.QuotaExceeded -> {
-                    store.status = WidgetStatus.QUOTA
-                    store.blockedUntil = now.plus(QUOTA_BACKOFF)
+                FetchResult.Blocked -> {
+                    store.status = WidgetStatus.BLOCKED
+                    store.blockedUntil = now.plus(BLOCK_BACKOFF)
                 }
                 FetchResult.Failed -> store.status = WidgetStatus.ERROR
             }
@@ -48,7 +47,7 @@ class RefreshWorker(context: Context, params: WorkerParameters) : Worker(context
         private const val KEY_FORCE = "force"
         private const val PERIODIC_NAME = "fear_greed_periodic"
         const val ONE_TIME_NAME = "fear_greed_now"
-        private val QUOTA_BACKOFF = Duration.ofHours(6)
+        private val BLOCK_BACKOFF = Duration.ofHours(6)
 
         private val networkConstraint = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)

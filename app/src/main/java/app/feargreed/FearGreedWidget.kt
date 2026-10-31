@@ -38,7 +38,6 @@ class FearGreedWidget : AppWidgetProvider() {
         private fun buildViews(context: Context): RemoteViews {
             val store = WidgetStore(context)
             val snapshot = store.snapshot
-            val hasKey = store.apiKey.isNotBlank()
             val views = RemoteViews(context.packageName, R.layout.widget)
 
             views.setImageViewBitmap(R.id.gauge, GaugeRenderer.render(snapshot?.score))
@@ -53,17 +52,12 @@ class FearGreedWidget : AppWidgetProvider() {
                 views.setTextViewText(R.id.rating, "")
                 views.setTextViewText(R.id.delta, "")
             }
-            views.setTextViewText(R.id.status, statusText(context, store, snapshot, hasKey))
+            views.setTextViewText(R.id.status, statusText(context, store, snapshot))
 
-            val target = if (hasKey) {
-                Intent(Intent.ACTION_VIEW, Uri.parse(CNN_URL))
-            } else {
-                Intent(context, MainActivity::class.java)
-            }
             val pending = PendingIntent.getActivity(
                 context,
                 0,
-                target,
+                Intent(Intent.ACTION_VIEW, Uri.parse(CNN_URL)),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             views.setOnClickPendingIntent(R.id.widget_root, pending)
@@ -75,14 +69,12 @@ class FearGreedWidget : AppWidgetProvider() {
             return context.getString(R.string.delta_format, previous, snapshot.score - previous)
         }
 
-        private fun statusText(context: Context, store: WidgetStore, snapshot: Snapshot?, hasKey: Boolean): String {
-            if (!hasKey) return context.getString(R.string.status_no_key)
+        private fun statusText(context: Context, store: WidgetStore, snapshot: Snapshot?): String {
             val updated = snapshot?.let { context.getString(R.string.updated_format, formatTime(context, it)) }
             val problem = when (store.status) {
                 WidgetStatus.OK -> null
                 WidgetStatus.LOADING -> context.getString(R.string.status_loading)
-                WidgetStatus.AUTH -> context.getString(R.string.status_auth)
-                WidgetStatus.QUOTA -> context.getString(R.string.status_quota)
+                WidgetStatus.BLOCKED -> context.getString(R.string.status_blocked)
                 WidgetStatus.ERROR -> context.getString(R.string.status_error)
             }
             return when {

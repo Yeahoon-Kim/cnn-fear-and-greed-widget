@@ -2,8 +2,9 @@ plugins {
     id("com.android.application")
 }
 
-// Local verification only: -PapiBase=http://10.0.2.2:8765 points the app at a mock server.
-val apiBase = (findProperty("apiBase") as String?) ?: "https://api.oanor.com/stockfeargreed-api"
+// Local verification only: -PapiUrl=http://127.0.0.1:8765/graphdata points the app at a mock server.
+val apiUrl = (findProperty("apiUrl") as String?)
+    ?: "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
 
 android {
     namespace = "app.feargreed"
@@ -13,10 +14,10 @@ android {
         applicationId = "app.feargreed"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
-        buildConfigField("String", "API_BASE", "\"$apiBase\"")
-        manifestPlaceholders["cleartext"] = apiBase.startsWith("http://").toString()
+        versionCode = 2
+        versionName = "0.2.0"
+        buildConfigField("String", "API_URL", "\"$apiUrl\"")
+        manifestPlaceholders["cleartext"] = apiUrl.startsWith("http://").toString()
     }
 
     buildFeatures {

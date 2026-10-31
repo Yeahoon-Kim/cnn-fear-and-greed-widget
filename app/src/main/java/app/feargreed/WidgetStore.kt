@@ -3,14 +3,10 @@ package app.feargreed
 import android.content.Context
 import java.time.Instant
 
-enum class WidgetStatus { OK, LOADING, AUTH, QUOTA, ERROR }
+enum class WidgetStatus { OK, LOADING, BLOCKED, ERROR }
 
 class WidgetStore(context: Context) {
     private val prefs = context.getSharedPreferences("fear_greed", Context.MODE_PRIVATE)
-
-    var apiKey: String
-        get() = prefs.getString("api_key", "").orEmpty()
-        set(value) = prefs.edit().putString("api_key", value).apply()
 
     var status: WidgetStatus
         get() = WidgetStatus.valueOf(prefs.getString("status", WidgetStatus.OK.name)!!)

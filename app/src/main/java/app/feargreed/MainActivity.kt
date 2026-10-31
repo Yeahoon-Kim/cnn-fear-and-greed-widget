@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.Observer
@@ -26,20 +25,13 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         store = WidgetStore(this)
         RefreshWorker.schedule(this)
+        RefreshWorker.refreshNow(this, force = false)
 
-        val keyField = findViewById<EditText>(R.id.api_key)
-        findViewById<Button>(R.id.save).setOnClickListener {
-            val entered = keyField.text.toString().trim()
-            if (entered.isNotEmpty()) {
-                store.apiKey = entered
-                keyField.text.clear()
-            }
-            if (store.apiKey.isNotBlank()) {
-                store.status = WidgetStatus.LOADING
-                FearGreedWidget.updateAll(this)
-                RefreshWorker.refreshNow(this)
-                showCurrent()
-            }
+        findViewById<Button>(R.id.refresh).setOnClickListener {
+            store.status = WidgetStatus.LOADING
+            FearGreedWidget.updateAll(this)
+            RefreshWorker.refreshNow(this)
+            showCurrent()
         }
         findViewById<Button>(R.id.pin).setOnClickListener { requestPin() }
         findViewById<Button>(R.id.battery).setOnClickListener {
