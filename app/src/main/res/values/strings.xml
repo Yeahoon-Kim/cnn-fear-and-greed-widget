@@ -17,6 +17,15 @@
     <string name="status_blocked">CNN 접근 제한</string>
     <string name="status_error">갱신 실패</string>
     <string name="status_stale_format">%1$s · %2$s</string>
+    <string name="compact_stale_format">%1$s (!)</string>
+
+    <string name="widget_settings_title">위젯 설정</string>
+    <string name="theme_label">테마</string>
+    <string name="theme_system">휴대폰 설정에 맞춤</string>
+    <string name="theme_light">라이트</string>
+    <string name="theme_dark">다크</string>
+    <string name="transparency_format">배경 투명도 %1$d%%</string>
+    <string name="open_cnn">CNN 페이지 열기</string>
 
     <string name="current_format">%1$.1f · %2$s\n%3$s</string>
     <string name="current_empty">아직 받은 값이 없습니다</string>

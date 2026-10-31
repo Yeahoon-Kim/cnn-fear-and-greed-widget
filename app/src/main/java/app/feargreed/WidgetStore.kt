@@ -47,6 +47,24 @@ class WidgetStore(context: Context) {
             editor.apply()
         }
 
+    fun style(widgetId: Int): WidgetStyle {
+        val theme = prefs.getString("theme_$widgetId", null)
+            ?.let { saved -> WidgetTheme.entries.firstOrNull { it.name == saved } }
+            ?: WidgetTheme.SYSTEM
+        return WidgetStyle(theme, prefs.getInt("transparency_$widgetId", 0))
+    }
+
+    fun saveStyle(widgetId: Int, style: WidgetStyle) {
+        prefs.edit()
+            .putString("theme_$widgetId", style.theme.name)
+            .putInt("transparency_$widgetId", style.transparencyPercent)
+            .apply()
+    }
+
+    fun deleteStyle(widgetId: Int) {
+        prefs.edit().remove("theme_$widgetId").remove("transparency_$widgetId").apply()
+    }
+
     private fun instantOrNull(key: String): Instant? =
         prefs.getLong(key, 0L).takeIf { it > 0L }?.let(Instant::ofEpochMilli)
 }
