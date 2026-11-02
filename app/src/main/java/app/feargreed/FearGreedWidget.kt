@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -79,12 +80,15 @@ class FearGreedWidget : AppWidgetProvider() {
 
         fun compactViews(context: Context, store: WidgetStore, style: WidgetStyle): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_compact)
-            applyStyle(views, style, primary = listOf(R.id.score), secondary = listOf(R.id.rating))
             val snapshot = store.snapshot
-            if (snapshot != null) {
-                val rating = Rating.of(snapshot.score)
+            val rating = snapshot?.let { Rating.of(it.score) }
+            val light = Palettes.compact(style.theme, dark = style.mode == WidgetMode.DARK, rating = rating)
+            val dark = Palettes.compact(style.theme, dark = style.mode != WidgetMode.LIGHT, rating = rating)
+            applyBackground(context, views, style, light.background, dark.background)
+            setColor(context, views, R.id.score, "setTextColor", light.number, dark.number)
+            setColor(context, views, R.id.rating, "setTextColor", light.label, dark.label)
+            if (snapshot != null && rating != null) {
                 views.setTextViewText(R.id.score, snapshot.score.roundToInt().toString())
-                views.setTextColor(R.id.score, rating.color)
                 val label = context.getString(rating.label)
                 views.setTextViewText(
                     R.id.rating,
@@ -100,12 +104,15 @@ class FearGreedWidget : AppWidgetProvider() {
         fun fullViews(context: Context, store: WidgetStore, style: WidgetStyle): RemoteViews {
             val snapshot = store.snapshot
             val views = RemoteViews(context.packageName, R.layout.widget)
-            applyStyle(
-                views,
-                style,
-                primary = listOf(R.id.score, R.id.rating),
-                secondary = listOf(R.id.delta, R.id.status),
-            )
+            val light = Palettes.standard(dark = style.mode == WidgetMode.DARK, rating = null)
+            val dark = Palettes.standard(dark = style.mode != WidgetMode.LIGHT, rating = null)
+            applyBackground(context, views, style, light.background, dark.background)
+            listOf(R.id.score, R.id.rating).forEach {
+                setColor(context, views, it, "setTextColor", light.primaryText, dark.primaryText)
+            }
+            listOf(R.id.delta, R.id.status).forEach {
+                setColor(context, views, it, "setTextColor", light.secondaryText, dark.secondaryText)
+            }
 
             views.setImageViewBitmap(R.id.gauge, GaugeRenderer.render(snapshot?.score))
             if (snapshot != null) {
@@ -122,17 +129,34 @@ class FearGreedWidget : AppWidgetProvider() {
             return views
         }
 
-        // The system theme relies on the night-qualified colors in the layouts.
-        private fun applyStyle(
+        private fun applyBackground(
+            context: Context,
             views: RemoteViews,
             style: WidgetStyle,
-            primary: List<Int>,
-            secondary: List<Int>,
+            light: Int,
+            dark: Int,
         ) {
             views.setInt(R.id.widget_background, "setImageAlpha", style.backgroundAlpha)
-            style.theme.background?.let { views.setInt(R.id.widget_background, "setColorFilter", it) }
-            style.theme.primaryText?.let { color -> primary.forEach { views.setTextColor(it, color) } }
-            style.theme.secondaryText?.let { color -> secondary.forEach { views.setTextColor(it, color) } }
+            setColor(context, views, R.id.widget_background, "setColorFilter", light, dark)
+        }
+
+        // Android 12+ picks the light or dark color when the widget is drawn, so a
+        // system mode switch needs no re-render; older versions use the current mode.
+        private fun setColor(
+            context: Context,
+            views: RemoteViews,
+            viewId: Int,
+            method: String,
+            light: Int,
+            dark: Int,
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                views.setColorInt(viewId, method, light, dark)
+            } else {
+                val night = context.resources.configuration.uiMode and
+                    Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                views.setInt(viewId, method, if (night) dark else light)
+            }
         }
 
         private fun setClick(context: Context, views: RemoteViews, id: Int) {
@@ -155,6 +179,18 @@ class FearGreedWidget : AppWidgetProvider() {
         private fun deltaText(context: Context, snapshot: Snapshot): String {
             val previous = snapshot.previousClose ?: return ""
             return context.getString(R.string.delta_format, previous, snapshot.score - previous)
+        }
+
+        fun lastCheckText(context: Context, store: WidgetStore): String {
+            val attempt = store.lastAttempt ?: return context.getString(R.string.last_check_never)
+            val result = when (store.status) {
+                WidgetStatus.OK -> context.getString(R.string.check_ok)
+                WidgetStatus.LOADING -> context.getString(R.string.status_loading)
+                WidgetStatus.BLOCKED -> context.getString(R.string.status_blocked)
+                WidgetStatus.ERROR -> context.getString(R.string.status_error)
+            }
+            val time = DateFormat.getTimeFormat(context).format(Date(attempt.toEpochMilli()))
+            return context.getString(R.string.last_check_format, time, result)
         }
 
         private fun statusText(context: Context, store: WidgetStore, snapshot: Snapshot?): String {

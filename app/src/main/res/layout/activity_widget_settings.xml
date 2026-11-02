@@ -42,8 +42,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:text="@string/mode_label"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <RadioGroup
+            android:id="@+id/mode_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/mode_system"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_system" />
+
+            <RadioButton
+                android:id="@+id/mode_light"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_light" />
+
+            <RadioButton
+                android:id="@+id/mode_dark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_dark" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="@string/theme_label"
             android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/theme_help" />
 
         <RadioGroup
             android:id="@+id/theme_group"
@@ -51,22 +88,22 @@
             android:layout_height="wrap_content">
 
             <RadioButton
-                android:id="@+id/theme_system"
+                android:id="@+id/theme_default"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/theme_system" />
+                android:text="@string/theme_default" />
 
             <RadioButton
-                android:id="@+id/theme_light"
+                android:id="@+id/theme_point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/theme_light" />
+                android:text="@string/theme_point" />
 
             <RadioButton
-                android:id="@+id/theme_dark"
+                android:id="@+id/theme_full_color"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/theme_dark" />
+                android:text="@string/theme_full_color" />
         </RadioGroup>
 
         <TextView
@@ -83,11 +120,16 @@
             android:layout_marginTop="8dp"
             android:max="100" />
 
+        <TextView
+            android:id="@+id/last_check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" />
+
         <Button
             android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:text="@string/refresh_now" />
 
         <Button
@@ -95,5 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/open_cnn" />
+
+        <include layout="@layout/battery_card" />
     </LinearLayout>
 </ScrollView>

@@ -21,8 +21,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/last_check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp" />
 
         <Button
             android:id="@+id/refresh"
@@ -36,16 +42,6 @@
             android:layout_height="wrap_content"
             android:text="@string/pin_widget" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/battery_help" />
-
-        <Button
-            android:id="@+id/battery"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/open_battery" />
+        <include layout="@layout/battery_card" />
     </LinearLayout>
 </ScrollView>

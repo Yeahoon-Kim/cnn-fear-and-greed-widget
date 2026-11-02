@@ -3,10 +3,7 @@ package app.feargreed
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -17,7 +14,7 @@ import androidx.work.WorkManager
 class MainActivity : Activity() {
     private lateinit var store: WidgetStore
     private val workObserver = Observer<List<WorkInfo>> { infos ->
-        if (infos.any { it.state == WorkInfo.State.SUCCEEDED }) showCurrent()
+        if (infos.any { it.state.isFinished }) showCurrent()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +31,6 @@ class MainActivity : Activity() {
             showCurrent()
         }
         findViewById<Button>(R.id.pin).setOnClickListener { requestPin() }
-        findViewById<Button>(R.id.battery).setOnClickListener {
-            startActivity(
-                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")),
-            )
-        }
         WorkManager.getInstance(this)
             .getWorkInfosForUniqueWorkLiveData(RefreshWorker.ONE_TIME_NAME)
             .observeForever(workObserver)
@@ -54,6 +46,7 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         showCurrent()
+        BatteryCard.bind(this)
     }
 
     private fun showCurrent() {
@@ -68,6 +61,7 @@ class MainActivity : Activity() {
                 getString(R.string.updated_format, FearGreedWidget.formatTime(this, snapshot)),
             )
         }
+        findViewById<TextView>(R.id.last_check).text = FearGreedWidget.lastCheckText(this, store)
     }
 
     private fun requestPin() {

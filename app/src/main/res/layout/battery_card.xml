@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="24dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/battery_label"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/battery_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp" />
+
+    <Button
+        android:id="@+id/battery_request"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/battery_request" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/battery_samsung_help" />
+
+    <Button
+        android:id="@+id/battery_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_battery" />
+</LinearLayout>

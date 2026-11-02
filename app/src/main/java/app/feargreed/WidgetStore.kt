@@ -47,22 +47,31 @@ class WidgetStore(context: Context) {
             editor.apply()
         }
 
+    // Before v0.5.0 the light/dark choice was stored under "theme_<id>".
     fun style(widgetId: Int): WidgetStyle {
-        val theme = prefs.getString("theme_$widgetId", null)
-            ?.let { saved -> WidgetTheme.entries.firstOrNull { it.name == saved } }
-            ?: WidgetTheme.SYSTEM
-        return WidgetStyle(theme, prefs.getInt("transparency_$widgetId", 0))
+        val savedMode = prefs.getString("mode_$widgetId", null) ?: prefs.getString("theme_$widgetId", null)
+        val mode = WidgetMode.entries.firstOrNull { it.name == savedMode } ?: WidgetMode.SYSTEM
+        val savedTheme = prefs.getString("color_theme_$widgetId", null)
+        val theme = WidgetTheme.entries.firstOrNull { it.name == savedTheme } ?: WidgetTheme.DEFAULT
+        return WidgetStyle(mode, theme, prefs.getInt("transparency_$widgetId", 0))
     }
 
     fun saveStyle(widgetId: Int, style: WidgetStyle) {
         prefs.edit()
-            .putString("theme_$widgetId", style.theme.name)
+            .remove("theme_$widgetId")
+            .putString("mode_$widgetId", style.mode.name)
+            .putString("color_theme_$widgetId", style.theme.name)
             .putInt("transparency_$widgetId", style.transparencyPercent)
             .apply()
     }
 
     fun deleteStyle(widgetId: Int) {
-        prefs.edit().remove("theme_$widgetId").remove("transparency_$widgetId").apply()
+        prefs.edit()
+            .remove("theme_$widgetId")
+            .remove("mode_$widgetId")
+            .remove("color_theme_$widgetId")
+            .remove("transparency_$widgetId")
+            .apply()
     }
 
     private fun instantOrNull(key: String): Instant? =

@@ -10,11 +10,17 @@ import android.widget.FrameLayout
 import android.widget.RadioGroup
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.lifecycle.Observer
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 
 class WidgetSettingsActivity : Activity() {
     private lateinit var store: WidgetStore
     private lateinit var style: WidgetStyle
     private var widgetId = AppWidgetManager.INVALID_APPWIDGET_ID
+    private val workObserver = Observer<List<WorkInfo>> { infos ->
+        if (infos.any { it.state.isFinished }) showPreview()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,19 +37,37 @@ class WidgetSettingsActivity : Activity() {
         store = WidgetStore(this)
         style = store.style(widgetId)
 
+        val modeGroup = findViewById<RadioGroup>(R.id.mode_group)
+        modeGroup.check(
+            when (style.mode) {
+                WidgetMode.SYSTEM -> R.id.mode_system
+                WidgetMode.LIGHT -> R.id.mode_light
+                WidgetMode.DARK -> R.id.mode_dark
+            },
+        )
+        modeGroup.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.mode_light -> WidgetMode.LIGHT
+                R.id.mode_dark -> WidgetMode.DARK
+                else -> WidgetMode.SYSTEM
+            }
+            style = style.copy(mode = mode)
+            save()
+        }
+
         val themeGroup = findViewById<RadioGroup>(R.id.theme_group)
         themeGroup.check(
             when (style.theme) {
-                WidgetTheme.SYSTEM -> R.id.theme_system
-                WidgetTheme.LIGHT -> R.id.theme_light
-                WidgetTheme.DARK -> R.id.theme_dark
+                WidgetTheme.DEFAULT -> R.id.theme_default
+                WidgetTheme.POINT -> R.id.theme_point
+                WidgetTheme.FULL_COLOR -> R.id.theme_full_color
             },
         )
         themeGroup.setOnCheckedChangeListener { _, checkedId ->
             val theme = when (checkedId) {
-                R.id.theme_light -> WidgetTheme.LIGHT
-                R.id.theme_dark -> WidgetTheme.DARK
-                else -> WidgetTheme.SYSTEM
+                R.id.theme_point -> WidgetTheme.POINT
+                R.id.theme_full_color -> WidgetTheme.FULL_COLOR
+                else -> WidgetTheme.DEFAULT
             }
             style = style.copy(theme = theme)
             save()
@@ -73,7 +97,25 @@ class WidgetSettingsActivity : Activity() {
         findViewById<Button>(R.id.open_cnn).setOnClickListener {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(CNN_URL)))
         }
+        WorkManager.getInstance(this)
+            .getWorkInfosForUniqueWorkLiveData(RefreshWorker.ONE_TIME_NAME)
+            .observeForever(workObserver)
         showPreview()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        showPreview()
+        BatteryCard.bind(this)
+    }
+
+    override fun onDestroy() {
+        if (::store.isInitialized) {
+            WorkManager.getInstance(this)
+                .getWorkInfosForUniqueWorkLiveData(RefreshWorker.ONE_TIME_NAME)
+                .removeObserver(workObserver)
+        }
+        super.onDestroy()
     }
 
     private fun save() {
@@ -94,6 +136,7 @@ class WidgetSettingsActivity : Activity() {
         full.removeAllViews()
         compact.addView(FearGreedWidget.compactViews(this, store, style).apply(this, compact))
         full.addView(FearGreedWidget.fullViews(this, store, style).apply(this, full))
+        findViewById<TextView>(R.id.last_check).text = FearGreedWidget.lastCheckText(this, store)
     }
 
     private companion object {

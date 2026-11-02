@@ -20,10 +20,15 @@
     <string name="compact_stale_format">%1$s (!)</string>
 
     <string name="widget_settings_title">위젯 설정</string>
+    <string name="mode_label">모드</string>
+    <string name="mode_system">휴대폰 설정에 맞춤</string>
+    <string name="mode_light">라이트</string>
+    <string name="mode_dark">다크</string>
     <string name="theme_label">테마</string>
-    <string name="theme_system">휴대폰 설정에 맞춤</string>
-    <string name="theme_light">라이트</string>
-    <string name="theme_dark">다크</string>
+    <string name="theme_help">포인트와 풀 컬러는 작은 크기 위젯에만 적용됩니다.</string>
+    <string name="theme_default">기본</string>
+    <string name="theme_point">포인트 · 라이트 모드에서 단계 색 배경</string>
+    <string name="theme_full_color">풀 컬러 · 항상 단계 색 배경</string>
     <string name="transparency_format">배경 투명도 %1$d%%</string>
     <string name="open_cnn">CNN 페이지 열기</string>
 
@@ -32,6 +37,13 @@
     <string name="refresh_now">지금 갱신</string>
     <string name="pin_widget">홈 화면에 위젯 추가</string>
     <string name="pin_unsupported">이 홈 앱은 바로 추가를 지원하지 않습니다. 홈 화면을 길게 눌러 추가하세요</string>
-    <string name="battery_help">갤럭시는 오래 열지 않은 앱을 절전시켜 갱신이 멈출 수 있습니다. 앱 정보 → 배터리에서 \'제한 없음\'을 선택하세요.</string>
+    <string name="battery_label">자동 갱신과 배터리</string>
+    <string name="battery_exempt">배터리 최적화에서 제외되어 있습니다. 자동 갱신이 가장 안정적으로 동작합니다.</string>
+    <string name="battery_not_exempt">배터리 최적화 대상입니다. 화면이 꺼져 있거나 오래 쓰지 않으면 자동 갱신이 늦어지거나 멈출 수 있습니다.</string>
+    <string name="battery_request">배터리 최적화에서 제외하기</string>
+    <string name="battery_samsung_help">갤럭시는 \'사용하지 않는 앱을 절전 상태로\' 기능이 따로 있습니다. 앱 정보 → 배터리에서 \'제한 없음\'인지 확인하세요.</string>
+    <string name="last_check_format">마지막 확인 %1$s · %2$s</string>
+    <string name="last_check_never">아직 확인한 적이 없습니다</string>
+    <string name="check_ok">성공</string>
     <string name="open_battery">앱 정보 열기</string>
 </resources>
