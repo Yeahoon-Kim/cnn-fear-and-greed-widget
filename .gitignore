@@ -18,3 +18,4 @@ local.properties
 *.jks
 *.keystore
 
+.mcp.json
